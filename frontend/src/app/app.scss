@@ -1,0 +1,60 @@
+.top {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 24px;
+  padding: 10px 20px;
+  background: var(--verde); color: #fff;
+}
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+.logo {
+  font: 700 .85rem var(--serif); letter-spacing: .06em;
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--arena); color: var(--verde);
+}
+.brand-txt { display: grid; line-height: 1.15; }
+.brand-txt strong { font: 700 1.05rem var(--serif); }
+.brand-txt small { font-size: .72rem; opacity: .75; }
+
+.nav-desk { display: flex; gap: 4px; flex: 1; }
+.nav-desk a {
+  color: rgba(255,255,255,.8); text-decoration: none; font-weight: 500;
+  padding: 8px 12px; border-radius: 8px; display: flex; align-items: center; gap: 6px;
+  &:hover { background: rgba(255,255,255,.08); color: #fff; }
+  &.on { background: rgba(255,255,255,.14); color: #fff; }
+}
+.pill {
+  background: var(--ambar); color: #fff; font-size: .7rem; font-weight: 700;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  display: inline-grid; place-items: center;
+}
+
+.who { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.demo { display: flex; align-items: center; gap: 6px; font-size: .78rem; opacity: .9; }
+.demo select {
+  width: auto; padding: 6px 8px; font-size: .85rem; border-radius: 8px;
+  background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.25);
+  option, optgroup { color: var(--tinta); }
+}
+.who .btn.ghost { color: rgba(255,255,255,.85); &:hover { background: rgba(255,255,255,.1); } }
+
+.nav-mobile { display: none; }
+
+@media (max-width: 720px) {
+  .top { padding: 8px 12px; gap: 10px; }
+  .brand-txt small { display: none; }
+  .nav-desk { display: none; }
+  .demo > span { display: none; }
+  .nav-mobile {
+    display: flex; position: fixed; inset: auto 0 0 0; z-index: 20;
+    background: var(--blanco); border-top: 1px solid var(--borde);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  .nav-mobile a {
+    flex: 1; display: grid; justify-items: center; gap: 2px;
+    text-decoration: none; color: var(--tinta-3); font-size: .72rem; font-weight: 600;
+    padding: 4px 0; border-radius: 10px;
+    &.on { color: var(--verde); background: var(--verde-claro); }
+  }
+  .ico { font-size: 1.2rem; position: relative; }
+  .ico .pill { position: absolute; top: -4px; right: -14px; }
+}
