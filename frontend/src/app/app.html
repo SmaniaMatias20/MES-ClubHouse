@@ -1,0 +1,53 @@
+@if (store.sesion()) {
+  <header class="top">
+    <a class="brand" [routerLink]="nav()[0]?.ruta">
+      <span class="logo">MES</span>
+      <span class="brand-txt"><strong>Club House</strong><small>{{ country }}</small></span>
+    </a>
+
+    <nav class="nav-desk">
+      @for (item of nav(); track item.ruta) {
+        <a [routerLink]="item.ruta" routerLinkActive="on">
+          {{ item.label }}
+          @if (item.badge?.(); as n) { <span class="pill">{{ n }}</span> }
+        </a>
+      }
+    </nav>
+
+    <div class="who">
+      <label class="demo" title="Modo demo: cambiá de rol para mostrar cada pantalla">
+        <span>Ver como</span>
+        <select [value]="valorRol()" (change)="cambiarRol($any($event.target).value)">
+          <optgroup label="Vecinos">
+            @for (l of store.lotes(); track l.id) {
+              @if (l.activo) { <option [value]="'lote:' + l.numero">Lote {{ l.numero }}</option> }
+            }
+          </optgroup>
+          <optgroup label="Club House">
+            <option value="restaurante">Restaurante</option>
+            <option value="repartidor">Repartidor</option>
+            <option value="admin">Administración</option>
+          </optgroup>
+        </select>
+      </label>
+      <button class="btn ghost sm" (click)="salir()">Salir</button>
+    </div>
+  </header>
+}
+
+<main>
+  <router-outlet />
+</main>
+
+@if (store.sesion() && nav().length > 1) {
+  <nav class="nav-mobile">
+    @for (item of nav(); track item.ruta) {
+      <a [routerLink]="item.ruta" routerLinkActive="on">
+        <span class="ico">{{ item.icono }}
+          @if (item.badge?.(); as n) { <span class="pill">{{ n }}</span> }
+        </span>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+}

@@ -1,0 +1,43 @@
+.tabs { margin-bottom: 18px; }
+.kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+.kpi { display: grid; gap: 4px; padding: 14px 16px; }
+.kpi strong { font: 700 1.45rem var(--serif); }
+.ambar { color: var(--ambar); }
+.dos { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+.mt { margin-top: 10px; }
+.barras { display: flex; align-items: flex-end; gap: 4px; height: 220px; margin-top: 14px; }
+.col-barra { flex: 1; display: grid; grid-template-rows: 1fr auto; height: 100%; align-items: end; justify-items: center; gap: 4px; min-width: 0; }
+.col-barra .b { width: 100%; max-width: 26px; min-height: 2px; background: var(--verde-2); border-radius: 4px 4px 0 0; }
+.col-barra:hover .b { background: var(--verde); }
+.col-barra .lbl { font-size: .65rem; color: var(--tinta-3); }
+.hbar { display: grid; grid-template-columns: 140px 1fr 32px; gap: 10px; align-items: center; }
+.hbar .num { text-align: right; }
+.barra-acc { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+.buscar { max-width: 280px; }
+.acc { display: flex; gap: 8px; flex-wrap: wrap; }
+.nuevo { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 12px; align-items: end; }
+.nuevo .full { grid-column: 1 / -1; }
+.nuevo .fin { display: flex; gap: 8px; justify-content: flex-end; grid-column: 1 / -1; }
+.monto { width: 120px; text-align: right; padding: 6px 8px; }
+.uso { width: 90px; }
+.sw { width: 18px; height: 18px; accent-color: var(--verde); }
+tr.inactivo td { opacity: .5; }
+.emoji { font-size: 1.4rem; }
+.items { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.filtros { display: flex; gap: 10px; flex-wrap: wrap; }
+.filtros .field { min-width: 150px; }
+.nota { margin-top: 10px; }
+
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .dos { grid-template-columns: 1fr; }
+  .nuevo { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .barras { height: 160px; gap: 2px; }
+  .col-barra .lbl { display: none; }
+  .hbar { grid-template-columns: 110px 1fr 28px; }
+  .buscar { max-width: none; }
+  .nuevo { grid-template-columns: 1fr; }
+}
+.confirmar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }

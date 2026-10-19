@@ -1,0 +1,194 @@
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Administración</h1>
+      <p class="muted">Club House · {{ mesActual }}</p>
+    </div>
+    @if (confirmandoReinicio()) {
+      <div class="confirmar small">
+        <span>¿Volver a los datos de ejemplo? Se pierden los cambios.</span>
+        <button class="btn ghost sm" (click)="confirmandoReinicio.set(false)">Cancelar</button>
+        <button class="btn peligro sm" (click)="reiniciar()">Reiniciar</button>
+      </div>
+    } @else {
+      <button class="btn ghost sm" (click)="confirmandoReinicio.set(true)">↺ Reiniciar datos de la demo</button>
+    }
+  </div>
+
+  <div class="chips tabs">
+    <button class="chip" [class.on]="tab() === 'resumen'" (click)="tab.set('resumen')">Resumen</button>
+    <button class="chip" [class.on]="tab() === 'lotes'" (click)="tab.set('lotes')">Lotes y saldos</button>
+    <button class="chip" [class.on]="tab() === 'menu'" (click)="tab.set('menu')">Menú</button>
+    <button class="chip" [class.on]="tab() === 'pedidos'" (click)="tab.set('pedidos')">Pedidos</button>
+  </div>
+
+  @switch (tab()) {
+    @case ('resumen') {
+      <div class="kpis">
+        <div class="card kpi"><span class="small muted">Ventas del mes</span><strong class="num">{{ kpis().ventas | ars }}</strong></div>
+        <div class="card kpi"><span class="small muted">Pedidos</span><strong class="num">{{ kpis().pedidos }}</strong></div>
+        <div class="card kpi"><span class="small muted">Ticket promedio</span><strong class="num">{{ kpis().ticket | ars }}</strong></div>
+        <div class="card kpi"><span class="small muted">Pagado con saldo</span><strong class="num">{{ kpis().saldo | ars }}</strong></div>
+        <div class="card kpi"><span class="small muted">Resto por cobrar</span><strong class="num ambar">{{ kpis().porCobrar | ars }}</strong></div>
+      </div>
+
+      <div class="dos">
+        <section class="card">
+          <h3>Ventas por día</h3>
+          <div class="barras">
+            @for (d of porDia(); track d.dia) {
+              <div class="col-barra" [title]="'Día ' + d.dia + ': ' + (d.total | ars)">
+                <span class="b" [style.height.%]="d.pct"></span>
+                <span class="lbl">{{ d.dia }}</span>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="card grid">
+          <h3>Por modalidad</h3>
+          @for (m of porModalidad(); track m.modalidad) {
+            <div class="hbar">
+              <span>{{ m.modalidad | modalidad: true }}</span>
+              <div class="bar"><span [style.width.%]="m.pct"></span></div>
+              <span class="num small">{{ m.cantidad }}</span>
+            </div>
+          }
+          <h3 class="mt">Más pedidos</h3>
+          @for (t of topProductos(); track t.nombre) {
+            <div class="hbar">
+              <span class="small">{{ t.nombre }}</span>
+              <div class="bar"><span [style.width.%]="t.pct"></span></div>
+              <span class="num small">{{ t.cantidad }}</span>
+            </div>
+          }
+        </section>
+      </div>
+    }
+
+    @case ('lotes') {
+      <div class="barra-acc">
+        <input class="buscar" placeholder="Buscar lote o titular" [ngModel]="busquedaLote()" (ngModelChange)="busquedaLote.set($event)" />
+        <div class="acc">
+          <button class="btn sec sm" (click)="descargarPlantilla()">Plantilla Excel</button>
+          <label class="btn sec sm">Importar Excel<input type="file" accept=".xlsx,.xls,.csv" hidden (change)="importarLotes($event)" /></label>
+          <button class="btn sec sm" (click)="exportarLotes()">Exportar a Excel</button>
+          <button class="btn sm" (click)="agregando.set(!agregando())">+ Nuevo lote</button>
+        </div>
+      </div>
+
+      @if (agregando()) {
+        <form class="card nuevo" (ngSubmit)="guardarLote()">
+          <label class="field">Lote<input name="n" [(ngModel)]="nuevoLote.numero" placeholder="Ej. 210" required /></label>
+          <label class="field">Titular<input name="t" [(ngModel)]="nuevoLote.titular" placeholder="Familia ..." required /></label>
+          <label class="field">Email<input name="e" [(ngModel)]="nuevoLote.email" type="email" /></label>
+          <label class="field">Teléfono<input name="tel" [(ngModel)]="nuevoLote.telefono" /></label>
+          <label class="field">Monto mensual<input name="m" [(ngModel)]="nuevoLote.montoMensual" type="number" min="0" step="1000" /></label>
+          <div class="fin">
+            <button type="button" class="btn ghost sm" (click)="agregando.set(false)">Cancelar</button>
+            <button class="btn sm" type="submit">Guardar</button>
+          </div>
+        </form>
+      }
+
+      @if (ajuste) {
+        <form class="card nuevo" (ngSubmit)="aplicarAjuste()">
+          <p class="full"><strong>Ajustar saldo del lote {{ store.loteDe(ajuste.loteId)?.numero }}</strong> <span class="small muted">(positivo suma, negativo resta)</span></p>
+          <label class="field">Monto<input name="am" [(ngModel)]="ajuste.monto" type="number" step="500" /></label>
+          <label class="field">Motivo<input name="ad" [(ngModel)]="ajuste.detalle" placeholder="Ej. bonificación por evento" /></label>
+          <div class="fin">
+            <button type="button" class="btn ghost sm" (click)="ajuste = null">Cancelar</button>
+            <button class="btn sm" type="submit">Aplicar</button>
+          </div>
+        </form>
+      }
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Lote</th><th>Titular</th><th>Contacto</th><th class="r">Monto mensual</th><th class="r">Usado</th><th class="r">Disponible</th><th>Uso</th><th>Activo</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (l of lotesConSaldo(); track l.id) {
+              <tr [class.inactivo]="!l.activo">
+                <td><strong>{{ l.numero }}</strong></td>
+                <td>{{ l.titular }}</td>
+                <td class="small muted">{{ l.email }}<br />{{ l.telefono }}</td>
+                <td class="r"><input class="monto" type="number" step="1000" [ngModel]="l.montoMensual" (change)="store.actualizarLote(l.id, { montoMensual: +$any($event.target).value })" /></td>
+                <td class="r num">{{ l.saldo.usado | ars }}</td>
+                <td class="r num"><strong>{{ l.saldo.disponible | ars }}</strong></td>
+                <td><div class="bar uso"><span [style.width.%]="l.saldo.asignado ? (l.saldo.usado / l.saldo.asignado) * 100 : 0"></span></div></td>
+                <td><input type="checkbox" class="sw" [checked]="l.activo" (change)="store.actualizarLote(l.id, { activo: $any($event.target).checked })" /></td>
+                <td><button class="btn ghost sm" (click)="ajuste = { loteId: l.id, monto: 0, detalle: '' }">Ajustar saldo</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted nota">El monto mensual se asigna el día 1 de cada mes y el saldo que sobra no se acumula. Un cambio de monto aplica desde el mes siguiente.</p>
+    }
+
+    @case ('menu') {
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Producto</th><th>Categoría</th><th class="r">Precio</th><th>Disponible</th></tr></thead>
+          <tbody>
+            @for (p of store.productos(); track p.id) {
+              <tr [class.inactivo]="!p.disponible">
+                <td class="emoji">{{ p.emoji }}</td>
+                <td><strong>{{ p.nombre }}</strong><br /><span class="small muted">{{ p.descripcion }}</span></td>
+                <td>{{ categoria(p.categoriaId) }}</td>
+                <td class="r"><input class="monto" type="number" step="100" [ngModel]="p.precio" (change)="store.actualizarProducto(p.id, { precio: +$any($event.target).value })" /></td>
+                <td><input type="checkbox" class="sw" [checked]="p.disponible" (change)="store.actualizarProducto(p.id, { disponible: $any($event.target).checked })" /></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @case ('pedidos') {
+      <div class="barra-acc">
+        <div class="filtros">
+          <label class="field">Desde<input type="date" [(ngModel)]="desde" (change)="actualizarRango()" /></label>
+          <label class="field">Hasta<input type="date" [(ngModel)]="hasta" (change)="actualizarRango()" /></label>
+          <label class="field">Modalidad
+            <select [ngModel]="filtroModalidad()" (ngModelChange)="filtroModalidad.set($event)">
+              <option value="">Todas</option>
+              <option value="delivery">Delivery</option>
+              <option value="retiro">Retiro</option>
+              <option value="en_lugar">En el lugar</option>
+            </select>
+          </label>
+        </div>
+        <button class="btn sm" (click)="exportarPedidos()">Exportar a Excel ({{ pedidosFiltrados().length }})</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Fecha</th><th>Lote</th><th>Pidió</th><th>Modalidad</th><th>Productos</th><th>Estado</th><th class="r">Total</th><th class="r">Saldo</th><th class="r">Resto</th></tr></thead>
+          <tbody>
+            @for (p of pedidosFiltrados(); track p.id) {
+              <tr>
+                <td><strong>{{ p.numero }}</strong></td>
+                <td>{{ p.creadoEn | date: 'dd/MM HH:mm' }}</td>
+                <td>{{ store.loteDe(p.loteId)?.numero }}</td>
+                <td>{{ p.nombreSolicitante }}</td>
+                <td>{{ p.modalidad | modalidad }}</td>
+                <td class="small items">{{ resumenItems(p) }}</td>
+                <td><span [class]="'badge ' + estadoClase(p.estado)">{{ p.estado | estado }}</span></td>
+                <td class="r num">{{ p.total | ars }}</td>
+                <td class="r num">{{ p.montoSaldo | ars }}</td>
+                <td class="r num">{{ p.montoResto | ars }} @if (p.montoResto) { <span class="small muted">{{ p.medioResto | medio }}</span> }</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="10" class="empty">No hay pedidos en ese rango.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
+
+@if (toast()) { <div class="toast">{{ toast() }}</div> }
