@@ -25,14 +25,14 @@ export class App {
         { ruta: '/carrito', label: 'Carrito', icono: '🛒', badge: () => this.store.cantidadCarrito() },
         { ruta: '/cuenta', label: 'Mi cuenta', icono: '👤' },
       ];
-      case 'restaurante': return [
-        { ruta: '/restaurante', label: 'Pedidos', icono: '📋', badge: () => this.store.pedidos().filter(p => p.estado === 'pendiente').length },
+      case 'recepcion': return [
+        { ruta: '/recepcion', label: 'Pedidos', icono: '📋', badge: () => this.store.pedidos().filter(p => p.estado === 'pendiente').length },
         { ruta: '/repartidor', label: 'Reparto', icono: '🛵' },
       ];
       case 'repartidor': return [{ ruta: '/repartidor', label: 'Reparto', icono: '🛵' }];
       case 'admin': return [
         { ruta: '/admin', label: 'Administración', icono: '⚙️' },
-        { ruta: '/restaurante', label: 'Pedidos', icono: '📋' },
+        { ruta: '/recepcion', label: 'Pedidos', icono: '📋' },
         { ruta: '/repartidor', label: 'Reparto', icono: '🛵' },
       ];
       default: return [];
@@ -43,7 +43,7 @@ export class App {
     const s = this.store.sesion();
     if (!s) return '';
     if (s.rol === 'vecino') return `Lote ${this.store.loteActual()?.numero}`;
-    return { restaurante: 'Restaurante', repartidor: 'Repartidor', admin: 'Administración' }[s.rol];
+    return { recepcion: 'Recepción', repartidor: 'Repartidor', admin: 'Administración' }[s.rol];
   });
 
   protected cambiarRol(valor: string) {

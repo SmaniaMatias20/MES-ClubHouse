@@ -28,10 +28,10 @@ Requiere activar una vez **Settings → Pages → Source: GitHub Actions**. En u
 
 ## Qué se puede probar
 
-En la barra superior, **Ver como** cambia entre un lote, el restaurante, el repartidor y la administración.
+En la barra superior, **Ver como** cambia entre un lote, recepción, el repartidor y la administración.
 
 - **Vecino (cuenta por lote):** menú por categorías, carrito con aclaraciones, modalidad delivery / retiro / en el lugar, nombre de quien pide, descuento del saldo del lote y el resto a pagar por fuera de la app (Mercado Pago o tarjeta). Seguimiento del pedido y **Mi cuenta** con saldo del mes, movimientos y pedidos (con "Repetir").
-- **Restaurante:** tablero con pedidos nuevos, en cocina, listos y en camino; aceptar, rechazar (devuelve el saldo), avanzar estados y marcar el resto como cobrado. Botón para simular un pedido entrante.
+- **Recepción:** tablero con pedidos nuevos, en cocina, listos y en camino; aceptar, rechazar (devuelve el saldo), avanzar estados y marcar el resto como cobrado. Botón para simular un pedido entrante.
 - **Repartidor:** deliveries listos y en camino.
 - **Administración:** resumen del mes, lotes y saldos (alta, monto mensual, ajustes, activar/desactivar), menú (precio y stock), listado de pedidos con filtros y exportación a Excel. Importación de lotes desde Excel con plantilla.
 
@@ -41,7 +41,7 @@ En la barra superior, **Ver como** cambia entre un lote, el restaurante, el repa
 frontend/src/app/
   core/          modelos, datos de ejemplo, estado (StoreService), formatos y Excel
   components/    tarjeta de pedido compartida
-  pages/         login, vecino, restaurante, repartidor, admin
+  pages/         login, vecino, recepcion, repartidor, admin
 docs/            propuesta de MVP y modelo de datos
 ```
 

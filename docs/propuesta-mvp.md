@@ -14,7 +14,7 @@ Reemplazar los pedidos por WhatsApp con una app web (instalable en el celular co
 | Rol | Qué hace |
 |---|---|
 | **Vecino (cuenta del lote)** | Una sola cuenta por lote, compartida por la familia. Ve el menú, arma el pedido, elige modalidad, paga con saldo y/u otro medio, sigue el estado, ve su historial y su saldo. |
-| **Restaurante (cocina/caja)** | Recibe pedidos en tiempo real, cambia estados (aceptado, en preparación, listo, en camino, entregado), puede rechazar. |
+| **Recepción** | Recibe pedidos en tiempo real, cambia estados (aceptado, en preparación, listo, en camino, entregado), puede rechazar. |
 | **Administrador** | Gestiona menú, precios, horarios, lotes, vecinos y saldos mensuales; ve reportes. |
 | **Repartidor** | El restaurante tiene repartidor propio. Ve los pedidos de delivery asignados (lote y nombre de quien pidió) y los marca entregados y cobrados. |
 
@@ -64,7 +64,7 @@ pedido ──< pedido_estado_historial
 | Tabla | Campos principales |
 |---|---|
 | `lote` | id, numero (único), direccion_referencia, activo |
-| `usuario` | id, lote_id (único para rol vecino; null para staff), nombre, email, telefono, password_hash, rol (`vecino`, `restaurante`, `repartidor`, `admin`), activo, creado_en |
+| `usuario` | id, lote_id (único para rol vecino; null para staff), nombre, email, telefono, password_hash, rol (`vecino`, `recepcion`, `repartidor`, `admin`), activo, creado_en |
 | `saldo_mensual` | id, lote_id, periodo (ej. `2026-11-01`), monto_asignado, monto_disponible, único (lote_id, periodo) |
 | `movimiento_saldo` | id, saldo_mensual_id, pedido_id (nullable), tipo (`asignacion`, `consumo`, `reintegro`, `ajuste`), monto, usuario_id (quién lo hizo), creado_en |
 | `categoria` | id, nombre, orden, activa |
