@@ -32,13 +32,13 @@ export class AdminPage {
   protected readonly kpis = computed(() => {
     const ps = this.pedidosMes();
     const ventas = ps.reduce((a, p) => a + p.total, 0);
-    const saldo = ps.reduce((a, p) => a + p.montoSaldo, 0);
+    const saldo = ps.reduce((a, p) => a + (p.pago?.montoSaldo ?? 0), 0);
     return {
       ventas,
       pedidos: ps.length,
       ticket: ps.length ? ventas / ps.length : 0,
       saldo,
-      porCobrar: ps.filter(p => !p.restoCobrado).reduce((a, p) => a + p.montoResto, 0),
+      porCobrar: ps.filter(p => !p.pago).reduce((a, p) => a + p.total, 0),
     };
   });
 
@@ -171,8 +171,8 @@ export class AdminPage {
     const filas = (ps: Pedido[]) => ps.map(p => ({
       Pedido: p.numero, Fecha: new Date(p.creadoEn).toLocaleString('es-AR'), Lote: this.store.loteDe(p.loteId)?.numero,
       'Pidió': p.nombreSolicitante, Modalidad: MODALIDAD_LABEL[p.modalidad], Estado: ESTADO_LABEL[p.estado],
-      Total: p.total, 'Pagado con saldo': p.montoSaldo, Resto: p.montoResto,
-      'Medio del resto': p.medioResto ? MEDIO_LABEL[p.medioResto] : '', 'Resto cobrado': p.montoResto ? (p.restoCobrado ? 'Sí' : 'No') : '',
+      Total: p.total, 'Forma de pago elegida': MEDIO_LABEL[p.medioPreferido], Cobrado: p.pago ? 'Sí' : 'No',
+      'Descontado del saldo': p.pago?.montoSaldo ?? 0, 'Otro medio': p.pago?.medioOtro ? MEDIO_LABEL[p.pago.medioOtro] : '', 'Monto otro medio': p.pago?.montoOtro ?? 0,
     }));
     const detalle = this.pedidosFiltrados().flatMap(p => p.items.map(i => ({
       Pedido: p.numero, Producto: i.nombre, Cantidad: i.cantidad, 'Precio unitario': i.precioUnitario, Subtotal: i.precioUnitario * i.cantidad, Aclaracion: i.notas ?? '',

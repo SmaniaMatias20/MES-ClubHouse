@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { FORMAT_PIPES } from '../../core/format';
-import { MedioPago, Modalidad } from '../../core/models';
+import { MedioPreferido, Modalidad } from '../../core/models';
 import { StoreService } from '../../core/store.service';
 
 @Component({
@@ -91,28 +91,22 @@ import { StoreService } from '../../core/store.service';
             <div class="fila"><span>Envío</span><span class="num">{{ 0 | ars }}</span></div>
             <div class="fila total"><span>Total</span><span class="num">{{ store.totalCarrito() | ars }}</span></div>
 
-            <label class="saldo">
-              <input type="checkbox" [ngModel]="usarSaldo()" (ngModelChange)="usarSaldo.set($event)" />
-              <span>
-                <strong>Usar saldo del lote</strong>
-                <span class="small muted">Disponible: {{ store.saldoActual().disponible | ars }}</span>
-              </span>
-              <strong class="num verde">−{{ montoSaldo() | ars }}</strong>
-            </label>
+            <div class="saldo">
+              <div class="fila"><strong>Saldo disponible del lote</strong><strong class="num verde">{{ store.saldoActual().disponible | ars }}</strong></div>
+              <span class="small muted">Es informativo: no se descuenta al pedir. Recepción lo descuenta cuando registra el pago.</span>
+            </div>
 
-            <div class="fila total resto"><span>A pagar</span><span class="num">{{ resto() | ars }}</span></div>
-
-            @if (resto() > 0) {
-              <div class="grid medio">
-                <span class="small muted">¿Cómo pagás el resto? Se cobra {{ cuandoSeCobra() }}.</span>
-                <div class="chips">
-                  <button class="chip" [class.on]="medio() === 'mercadopago'" (click)="medio.set('mercadopago')">Mercado Pago</button>
-                  <button class="chip" [class.on]="medio() === 'tarjeta'" (click)="medio.set('tarjeta')">Tarjeta</button>
-                </div>
+            <div class="grid medio">
+              <span class="small muted">¿Cómo pensás pagar? Se cobra {{ cuandoSeCobra() }}.</span>
+              <div class="chips">
+                <button class="chip" [class.on]="medio() === 'saldo'" (click)="medio.set('saldo')">Saldo del lote</button>
+                <button class="chip" [class.on]="medio() === 'mercadopago'" (click)="medio.set('mercadopago')">Mercado Pago</button>
+                <button class="chip" [class.on]="medio() === 'tarjeta'" (click)="medio.set('tarjeta')">Tarjeta</button>
               </div>
-            } @else {
-              <p class="small verde">✓ Tu saldo cubre todo el pedido.</p>
-            }
+              @if (medio() === 'saldo' && faltante() > 0) {
+                <p class="small aviso">El saldo no alcanza: los {{ faltante() | ars }} restantes se pagan con Mercado Pago o tarjeta.</p>
+              }
+            </div>
 
             @if (error()) { <p class="err small">{{ error() }}</p> }
             <button class="btn block" (click)="confirmar()">Confirmar pedido</button>
@@ -142,10 +136,8 @@ import { StoreService } from '../../core/store.service';
     .resumen { position: sticky; top: 76px; display: grid; gap: 10px; }
     .fila { display: flex; justify-content: space-between; }
     .total { font-weight: 700; font-size: 1.05rem; border-top: 1px solid var(--arena-2); padding-top: 10px; }
-    .resto { font-size: 1.2rem; }
-    .saldo { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 12px; border-radius: 12px; background: var(--verde-claro); cursor: pointer; }
-    .saldo input { width: 18px; height: 18px; accent-color: var(--verde); }
-    .saldo > span { display: grid; }
+    .saldo { display: grid; gap: 4px; padding: 12px; border-radius: 12px; background: var(--verde-claro); }
+    .aviso { color: var(--ambar); }
     .verde { color: var(--verde); }
     .err { color: var(--rojo); }
     @media (max-width: 900px) {
@@ -174,17 +166,14 @@ export class CarritoPage {
   protected readonly horarios = ['Lo antes posible', '12:30', '13:00', '13:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
 
   protected readonly modalidad = signal<Modalidad>('delivery');
-  protected readonly medio = signal<MedioPago>('mercadopago');
+  protected readonly medio = signal<MedioPreferido>('saldo');
   protected readonly error = signal('');
   protected nombre = '';
   protected telefono = '';
   protected mesa = '';
   protected horaRetiro = this.horarios[0];
   protected notas = '';
-  protected readonly usarSaldo = signal(true);
-
-  protected readonly montoSaldo = computed(() => (this.usarSaldo() ? Math.min(this.store.saldoActual().disponible, this.store.totalCarrito()) : 0));
-  protected readonly resto = computed(() => this.store.totalCarrito() - this.montoSaldo());
+  protected readonly faltante = computed(() => Math.max(0, this.store.totalCarrito() - this.store.saldoActual().disponible));
 
   protected cuandoSeCobra() {
     return { delivery: 'al entregar en tu lote', retiro: 'cuando lo retirás', en_lugar: 'en la mesa' }[this.modalidad()];
@@ -206,8 +195,7 @@ export class CarritoPage {
       mesa: this.mesa,
       horaRetiro: this.horaRetiro,
       notas: this.notas,
-      usarSaldo: this.usarSaldo(),
-      medioResto: this.medio(),
+      medioPreferido: this.medio(),
     });
     if (pedido) this.router.navigate(['/pedido', pedido.id], { queryParams: { nuevo: 1 } });
   }

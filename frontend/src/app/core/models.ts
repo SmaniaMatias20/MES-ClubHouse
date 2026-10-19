@@ -14,6 +14,17 @@ export type EstadoPedido =
 
 export type MedioPago = 'mercadopago' | 'tarjeta';
 
+/** Cómo piensa pagar el vecino. Es solo una referencia para Recepción. */
+export type MedioPreferido = 'saldo' | MedioPago;
+
+/** Cobro registrado a mano por Recepción o Administración. */
+export interface Pago {
+  montoSaldo: number;
+  montoOtro: number;
+  medioOtro?: MedioPago;
+  registradoEn: string;
+}
+
 export interface Lote {
   id: number;
   numero: string;
@@ -64,10 +75,8 @@ export interface Pedido {
   notas?: string;
   items: PedidoItem[];
   total: number;
-  montoSaldo: number;
-  montoResto: number;
-  medioResto?: MedioPago;
-  restoCobrado: boolean;
+  medioPreferido: MedioPreferido;
+  pago?: Pago;
   estado: EstadoPedido;
   historial: CambioEstado[];
   creadoEn: string;

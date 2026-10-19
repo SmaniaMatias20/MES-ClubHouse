@@ -30,8 +30,8 @@ Requiere activar una vez **Settings → Pages → Source: GitHub Actions**. En u
 
 En la barra superior, **Ver como** cambia entre un lote, recepción, el repartidor y la administración.
 
-- **Vecino (cuenta por lote):** menú por categorías, carrito con aclaraciones, modalidad delivery / retiro / en el lugar, nombre de quien pide, descuento del saldo del lote y el resto a pagar por fuera de la app (Mercado Pago o tarjeta). Seguimiento del pedido y **Mi cuenta** con saldo del mes, movimientos y pedidos (con "Repetir").
-- **Recepción:** tablero con pedidos nuevos, en cocina, listos y en camino; aceptar, rechazar (devuelve el saldo), avanzar estados y marcar el resto como cobrado. Botón para simular un pedido entrante.
+- **Vecino (cuenta por lote):** menú por categorías, carrito con aclaraciones, modalidad delivery / retiro / en el lugar, nombre de quien pide y cómo piensa pagar (saldo del lote, Mercado Pago o tarjeta). El saldo se muestra pero no se descuenta al pedir. Seguimiento del pedido y **Mi cuenta** con saldo del mes, movimientos y pedidos (con "Repetir").
+- **Recepción:** tablero con pedidos nuevos, en cocina, listos y en camino; aceptar, rechazar, avanzar estados y **registrar el cobro**: cuánto se descuenta del saldo del lote y cuánto se pagó con Mercado Pago o tarjeta. Botón para simular un pedido entrante.
 - **Repartidor:** deliveries listos y en camino.
 - **Administración:** resumen del mes, lotes y saldos (alta, monto mensual, ajustes, activar/desactivar), menú (precio y stock), listado de pedidos con filtros y exportación a Excel. Importación de lotes desde Excel con plantilla.
 

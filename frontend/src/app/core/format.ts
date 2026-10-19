@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { EstadoPedido, MedioPago, Modalidad } from './models';
+import { EstadoPedido, MedioPago, MedioPreferido, Modalidad } from './models';
 
 const ARS = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 
@@ -26,7 +26,8 @@ export const MODALIDAD_ICONO: Record<Modalidad, string> = {
   en_lugar: '🍽️',
 };
 
-export const MEDIO_LABEL: Record<MedioPago, string> = {
+export const MEDIO_LABEL: Record<MedioPreferido, string> = {
+  saldo: 'Saldo del lote',
   mercadopago: 'Mercado Pago',
   tarjeta: 'Tarjeta',
 };
@@ -59,7 +60,7 @@ export class ModalidadPipe implements PipeTransform {
 
 @Pipe({ name: 'medio' })
 export class MedioPipe implements PipeTransform {
-  transform(v: MedioPago | undefined): string {
+  transform(v: MedioPreferido | MedioPago | undefined): string {
     return v ? MEDIO_LABEL[v] : '';
   }
 }

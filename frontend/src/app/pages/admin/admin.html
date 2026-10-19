@@ -29,7 +29,7 @@
         <div class="card kpi"><span class="small muted">Pedidos</span><strong class="num">{{ kpis().pedidos }}</strong></div>
         <div class="card kpi"><span class="small muted">Ticket promedio</span><strong class="num">{{ kpis().ticket | ars }}</strong></div>
         <div class="card kpi"><span class="small muted">Pagado con saldo</span><strong class="num">{{ kpis().saldo | ars }}</strong></div>
-        <div class="card kpi"><span class="small muted">Resto por cobrar</span><strong class="num ambar">{{ kpis().porCobrar | ars }}</strong></div>
+        <div class="card kpi"><span class="small muted">Pendiente de cobro</span><strong class="num ambar">{{ kpis().porCobrar | ars }}</strong></div>
       </div>
 
       <div class="dos">
@@ -165,7 +165,7 @@
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Fecha</th><th>Lote</th><th>Pidió</th><th>Modalidad</th><th>Productos</th><th>Estado</th><th class="r">Total</th><th class="r">Saldo</th><th class="r">Resto</th></tr></thead>
+          <thead><tr><th>#</th><th>Fecha</th><th>Lote</th><th>Pidió</th><th>Modalidad</th><th>Productos</th><th>Estado</th><th class="r">Total</th><th>Pago</th></tr></thead>
           <tbody>
             @for (p of pedidosFiltrados(); track p.id) {
               <tr>
@@ -177,11 +177,17 @@
                 <td class="small items">{{ resumenItems(p) }}</td>
                 <td><span [class]="'badge ' + estadoClase(p.estado)">{{ p.estado | estado }}</span></td>
                 <td class="r num">{{ p.total | ars }}</td>
-                <td class="r num">{{ p.montoSaldo | ars }}</td>
-                <td class="r num">{{ p.montoResto | ars }} @if (p.montoResto) { <span class="small muted">{{ p.medioResto | medio }}</span> }</td>
+                <td class="small">
+                  @if (p.pago; as pago) {
+                    @if (pago.montoSaldo) { <span class="num">Saldo {{ pago.montoSaldo | ars }}</span> }
+                    @if (pago.montoOtro) { <span class="num muted">{{ pago.medioOtro | medio }} {{ pago.montoOtro | ars }}</span> }
+                  } @else if (p.estado !== 'cancelado' && p.estado !== 'rechazado') {
+                    <span class="badge ambar">Sin cobrar</span>
+                  }
+                </td>
               </tr>
             } @empty {
-              <tr><td colspan="10" class="empty">No hay pedidos en ese rango.</td></tr>
+              <tr><td colspan="9" class="empty">No hay pedidos en ese rango.</td></tr>
             }
           </tbody>
         </table>
