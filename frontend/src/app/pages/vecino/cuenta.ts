@@ -29,7 +29,7 @@ import { StoreService } from '../../core/store.service';
           </div>
         </div>
         <div class="bar"><span [style.width.%]="pctUsado()"></span></div>
-        <p class="small muted">Usaste el {{ pctUsado() | number: '1.0-0' }}% del saldo. Se renueva el {{ proximaRenovacion() | date: "d 'de' MMMM" }} y lo que no uses se pierde.</p>
+        <p class="small muted">Usaste el {{ pctUsado() | number: '1.0-0' }}% del saldo. Se renueva el {{ proximaRenovacion() | date: "d 'de' MMMM" }} y lo que no uses se pierde. Recepción descuenta el saldo cuando registra el pago de cada pedido.</p>
       </section>
 
       <div class="tabs chips">
@@ -53,8 +53,12 @@ import { StoreService } from '../../core/store.service';
               </a>
               <div class="montos">
                 <strong class="num">{{ p.total | ars }}</strong>
-                <span class="small verde num">Saldo {{ p.montoSaldo | ars }}</span>
-                @if (p.montoResto > 0) { <span class="small muted num">{{ p.medioResto | medio }} {{ p.montoResto | ars }}</span> }
+                @if (p.pago; as pago) {
+                  @if (pago.montoSaldo) { <span class="small verde num">Saldo {{ pago.montoSaldo | ars }}</span> }
+                  @if (pago.montoOtro) { <span class="small muted num">{{ pago.medioOtro | medio }} {{ pago.montoOtro | ars }}</span> }
+                } @else if (p.estado !== 'cancelado' && p.estado !== 'rechazado') {
+                  <span class="badge ambar">Pago pendiente</span>
+                }
                 <button class="btn sec sm" (click)="repetir(p)">Repetir</button>
               </div>
             </article>

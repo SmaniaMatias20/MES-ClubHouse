@@ -43,8 +43,8 @@ import { StoreService } from '../../core/store.service';
               </li>
             }
           </ol>
-          @if (p.estado === 'rechazado' || p.estado === 'cancelado') {
-            <p class="small muted">El saldo usado ({{ p.montoSaldo | ars }}) volvió a tu cuenta.</p>
+          @if ((p.estado === 'rechazado' || p.estado === 'cancelado') && p.pago?.montoSaldo) {
+            <p class="small muted">El saldo descontado ({{ p.pago?.montoSaldo | ars }}) volvió a tu cuenta.</p>
           }
         </section>
 
@@ -57,15 +57,14 @@ import { StoreService } from '../../core/store.service';
             </div>
           }
           <div class="fila total"><span>Total</span><span class="num">{{ p.total | ars }}</span></div>
-          <div class="fila verde"><span>Pagado con saldo del lote</span><span class="num">−{{ p.montoSaldo | ars }}</span></div>
-          <div class="fila total">
-            <span>Resto @if (p.medioResto) { · {{ p.medioResto | medio }} }</span>
-            <span class="num">{{ p.montoResto | ars }}
-              @if (p.montoResto > 0) {
-                <span class="badge" [class.verde]="p.restoCobrado" [class.ambar]="!p.restoCobrado">{{ p.restoCobrado ? 'Cobrado' : 'A cobrar' }}</span>
-              }
-            </span>
-          </div>
+          @if (p.pago; as pago) {
+            <div class="fila"><span>Pago</span><span class="badge verde">Registrado</span></div>
+            @if (pago.montoSaldo) { <div class="fila verde"><span>Descontado del saldo del lote</span><span class="num">{{ pago.montoSaldo | ars }}</span></div> }
+            @if (pago.montoOtro) { <div class="fila"><span>{{ pago.medioOtro | medio }}</span><span class="num">{{ pago.montoOtro | ars }}</span></div> }
+          } @else {
+            <div class="fila"><span>Pago</span><span class="badge ambar">Pendiente</span></div>
+            <p class="small muted">Elegiste pagar con {{ p.medioPreferido | medio }}. Recepción registra el pago y, si corresponde, lo descuenta de tu saldo.</p>
+          }
           <p class="small muted">Pidió: {{ p.nombreSolicitante }} @if (p.mesa) { · Mesa {{ p.mesa }} } @if (p.horaRetiro) { · Retira {{ p.horaRetiro }} }</p>
         </section>
 

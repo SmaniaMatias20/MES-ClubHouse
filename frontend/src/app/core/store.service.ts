@@ -1,8 +1,8 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
-import { CartItem, EstadoPedido, Lote, MedioPago, Modalidad, MovimientoSaldo, Pedido, PedidoItem, Producto, Sesion } from './models';
+import { CartItem, EstadoPedido, Lote, MedioPago, MedioPreferido, Modalidad, MovimientoSaldo, Pedido, PedidoItem, Producto, Sesion } from './models';
 import { CATEGORIAS, LOTES, PRODUCTOS, generarDatosIniciales, periodoDe } from './mock-data';
 
-const STORAGE_KEY = 'mes-clubhouse-demo-v2';
+const STORAGE_KEY = 'mes-clubhouse-demo-v3';
 
 interface EstadoDemo {
   sesion: Sesion | null;
@@ -19,8 +19,7 @@ export interface NuevoPedido {
   mesa?: string;
   horaRetiro?: string;
   notas?: string;
-  usarSaldo: boolean;
-  medioResto: MedioPago;
+  medioPreferido: MedioPreferido;
 }
 
 /** Siguiente estado según la modalidad. */
@@ -192,15 +191,12 @@ export class StoreService {
       modalidad,
       mesa: modalidad === 'en_lugar' ? String(1 + Math.floor(Math.random() * 12)) : undefined,
       horaRetiro: modalidad === 'retiro' ? 'Lo antes posible' : undefined,
-      usarSaldo: true,
-      medioResto: Math.random() > 0.5 ? 'mercadopago' : 'tarjeta',
+      medioPreferido: (['saldo', 'mercadopago', 'tarjeta'] as MedioPreferido[])[Math.floor(Math.random() * 3)],
     });
   }
 
   private crearPedido(loteId: number, items: PedidoItem[], datos: NuevoPedido): Pedido {
     const total = items.reduce((a, i) => a + i.precioUnitario * i.cantidad, 0);
-    const montoSaldo = datos.usarSaldo ? Math.max(0, Math.min(this.saldoDe(loteId).disponible, total)) : 0;
-    const montoResto = total - montoSaldo;
     const ahora = new Date().toISOString();
     const id = Math.max(0, ...this.estado().pedidos.map(p => p.id)) + 1;
 
@@ -216,20 +212,14 @@ export class StoreService {
       notas: datos.notas?.trim() || undefined,
       items,
       total,
-      montoSaldo,
-      montoResto,
-      medioResto: montoResto > 0 ? datos.medioResto : undefined,
-      restoCobrado: montoResto === 0,
+      medioPreferido: datos.medioPreferido,
       estado: 'pendiente',
       historial: [{ estado: 'pendiente', fecha: ahora }],
       creadoEn: ahora,
     };
 
-    this.estado.update(e => ({
-      ...e,
-      pedidos: [...e.pedidos, pedido],
-      movimientos: montoSaldo > 0 ? [...e.movimientos, this.movimiento(e, loteId, 'consumo', -montoSaldo, `Pedido #${pedido.numero}`, id)] : e.movimientos,
-    }));
+    // El pedido no toca el saldo: se descuenta recién cuando Recepción registra el cobro.
+    this.estado.update(e => ({ ...e, pedidos: [...e.pedidos, pedido] }));
     return pedido;
   }
 
@@ -253,15 +243,32 @@ export class StoreService {
       if (!p) return e;
       const actualizado: Pedido = { ...p, estado, historial: [...p.historial, { estado, fecha: new Date().toISOString() }] };
       let movimientos = e.movimientos;
-      if ((estado === 'rechazado' || estado === 'cancelado') && p.montoSaldo > 0) {
-        movimientos = [...movimientos, this.movimiento(e, p.loteId, 'reintegro', p.montoSaldo, `Reintegro pedido #${p.numero}`, p.id)];
+      if ((estado === 'rechazado' || estado === 'cancelado') && p.pago?.montoSaldo) {
+        movimientos = [...movimientos, this.movimiento(e, p.loteId, 'reintegro', p.pago.montoSaldo, `Reintegro pedido #${p.numero}`, p.id)];
       }
       return { ...e, pedidos: e.pedidos.map(x => (x.id === pedidoId ? actualizado : x)), movimientos };
     });
   }
 
-  marcarCobrado(pedidoId: number) {
-    this.estado.update(e => ({ ...e, pedidos: e.pedidos.map(p => (p.id === pedidoId ? { ...p, restoCobrado: true } : p)) }));
+  /**
+   * Recepción o Administración registran el cobro: cuánto se descuenta del saldo del lote
+   * y cuánto se pagó por fuera de la app. Devuelve un error si no se puede registrar.
+   */
+  registrarCobro(pedidoId: number, montoSaldo: number, medioOtro: MedioPago): string | null {
+    const p = this.estado().pedidos.find(x => x.id === pedidoId);
+    if (!p) return 'No se encontró el pedido.';
+    if (p.pago) return 'El pedido ya tiene un cobro registrado.';
+    const saldo = Math.round(montoSaldo) || 0;
+    if (saldo < 0 || saldo > p.total) return 'El monto del saldo tiene que estar entre 0 y el total.';
+    if (saldo > this.saldoDe(p.loteId).disponible) return 'El lote no tiene saldo suficiente.';
+    const montoOtro = p.total - saldo;
+    const pago = { montoSaldo: saldo, montoOtro, medioOtro: montoOtro > 0 ? medioOtro : undefined, registradoEn: new Date().toISOString() };
+    this.estado.update(e => ({
+      ...e,
+      pedidos: e.pedidos.map(x => (x.id === pedidoId ? { ...x, pago } : x)),
+      movimientos: saldo > 0 ? [...e.movimientos, this.movimiento(e, p.loteId, 'consumo', -saldo, `Pedido #${p.numero}`, p.id)] : e.movimientos,
+    }));
+    return null;
   }
 
   // ---------- Admin ----------

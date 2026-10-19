@@ -105,9 +105,12 @@ export function generarDatosIniciales(hoy = new Date()) {
     });
     const total = items.reduce((a, it) => a + it.precioUnitario * it.cantidad, 0);
     const saldo = disponible.get(s.loteId) ?? 0;
-    const montoSaldo = Math.min(saldo, total);
+    // Los pedidos entregados ya tienen el cobro registrado; los de hoy todavía no.
+    const cobrado = s.estado === 'entregado';
+    const montoSaldo = cobrado ? Math.min(saldo, total) : 0;
     disponible.set(s.loteId, saldo - montoSaldo);
-    const montoResto = total - montoSaldo;
+    const montoOtro = total - montoSaldo;
+    const medioPreferido = !cobrado ? (['saldo', 'mercadopago', 'tarjeta'] as const)[i % 3] : montoSaldo === total ? 'saldo' : i % 2 ? 'tarjeta' : 'mercadopago';
     const id = i + 1;
 
     const flujo: EstadoPedido[] = s.modalidad === 'delivery' ? FLUJO : FLUJO.filter(e => e !== 'en_camino');
@@ -118,9 +121,11 @@ export function generarDatosIniciales(hoy = new Date()) {
 
     pedidos.push({
       id, numero: String(1000 + id), loteId: s.loteId, nombreSolicitante: s.nombre,
-      modalidad: s.modalidad, mesa: s.mesa, items, total, montoSaldo, montoResto,
-      medioResto: montoResto > 0 ? (i % 2 ? 'tarjeta' : 'mercadopago') : undefined,
-      restoCobrado: s.estado === 'entregado' || montoResto === 0,
+      modalidad: s.modalidad, mesa: s.mesa, items, total, medioPreferido,
+      pago: cobrado ? {
+        montoSaldo, montoOtro, medioOtro: montoOtro > 0 ? (i % 2 ? 'tarjeta' : 'mercadopago') : undefined,
+        registradoEn: historial[historial.length - 1].fecha,
+      } : undefined,
       estado: s.estado, historial, creadoEn: fecha.toISOString(),
     });
 

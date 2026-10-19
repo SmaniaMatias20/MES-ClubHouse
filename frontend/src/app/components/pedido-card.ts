@@ -1,7 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { FORMAT_PIPES } from '../core/format';
-import { Pedido } from '../core/models';
+import { MedioPago, Pedido } from '../core/models';
 import { StoreService, siguienteEstado } from '../core/store.service';
 
 const ACCION: Record<string, string> = {
@@ -15,7 +16,7 @@ const ACCION: Record<string, string> = {
 /** Tarjeta de pedido para el panel del restaurante y el repartidor. */
 @Component({
   selector: 'app-pedido-card',
-  imports: [DatePipe, ...FORMAT_PIPES],
+  imports: [DatePipe, FormsModule, ...FORMAT_PIPES],
   template: `
     @let p = pedido();
     <article class="card pc" [class.nuevo]="p.estado === 'pendiente'">
@@ -41,21 +42,45 @@ const ACCION: Record<string, string> = {
 
       <div class="pago small">
         <span>Total <strong class="num">{{ p.total | ars }}</strong></span>
-        <span class="verde">Saldo <span class="num">{{ p.montoSaldo | ars }}</span></span>
-        @if (p.montoResto > 0) {
-          <span>
-            Cobrar <strong class="num">{{ p.montoResto | ars }}</strong> {{ p.medioResto | medio }}
-            <span class="badge" [class.verde]="p.restoCobrado" [class.ambar]="!p.restoCobrado">{{ p.restoCobrado ? 'Cobrado' : 'Pendiente' }}</span>
-          </span>
+        @if (p.pago; as pago) {
+          <span class="badge verde">Cobrado</span>
+          @if (pago.montoSaldo) { <span class="verde">Saldo <span class="num">{{ pago.montoSaldo | ars }}</span></span> }
+          @if (pago.montoOtro) { <span>{{ pago.medioOtro | medio }} <span class="num">{{ pago.montoOtro | ars }}</span></span> }
+        } @else {
+          <span class="badge ambar">Sin cobrar</span>
+          <span class="muted">Paga con {{ p.medioPreferido | medio }}</span>
         }
       </div>
+
+      @if (cobrando()) {
+        <form class="cobro" (ngSubmit)="confirmarCobro()">
+          <p class="small">Saldo disponible del lote {{ lote()?.numero }}: <strong class="num">{{ disponible() | ars }}</strong></p>
+          <label class="field">Descontar del saldo
+            <input name="saldo" type="number" min="0" step="100" [max]="maxSaldo()" [ngModel]="montoSaldo()" (ngModelChange)="montoSaldo.set(+$event)" />
+          </label>
+          @if (resto() > 0) {
+            <div class="grid resto">
+              <span class="small">Resto <strong class="num">{{ resto() | ars }}</strong> pagado con:</span>
+              <div class="chips">
+                <button type="button" class="chip" [class.on]="medioOtro() === 'mercadopago'" (click)="medioOtro.set('mercadopago')">Mercado Pago</button>
+                <button type="button" class="chip" [class.on]="medioOtro() === 'tarjeta'" (click)="medioOtro.set('tarjeta')">Tarjeta</button>
+              </div>
+            </div>
+          }
+          @if (errorCobro()) { <p class="small err">{{ errorCobro() }}</p> }
+          <div class="fin">
+            <button type="button" class="btn ghost sm" (click)="cobrando.set(false)">Cancelar</button>
+            <button class="btn sm" type="submit">Confirmar cobro</button>
+          </div>
+        </form>
+      }
 
       <footer>
         @if (p.estado === 'pendiente') {
           <button class="btn peligro sm" (click)="store.cambiarEstado(p.id, 'rechazado')">Rechazar</button>
         }
-        @if (p.montoResto > 0 && !p.restoCobrado && cobrable()) {
-          <button class="btn sec sm" (click)="store.marcarCobrado(p.id)">Marcar cobrado</button>
+        @if (puedeCobrar() && !cobrando()) {
+          <button class="btn sec sm" (click)="abrirCobro()">Registrar cobro</button>
         }
         @if (accion(); as a) {
           <button class="btn sm" (click)="store.avanzar(p.id)">{{ a }}</button>
@@ -74,6 +99,11 @@ const ACCION: Record<string, string> = {
     .nota { background: var(--ambar-claro); padding: 6px 10px; border-radius: 8px; }
     .pago { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
     .verde { color: var(--verde); }
+    .cobro { display: grid; gap: 10px; padding: 12px; border-radius: 10px; border: 1px dashed var(--borde); background: var(--blanco); }
+    .cobro .fin { display: flex; gap: 8px; justify-content: flex-end; }
+    .resto { gap: 6px; }
+    .err { color: var(--rojo); }
+    .muted { color: var(--tinta-2); }
     footer { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
   `,
 })
@@ -90,7 +120,34 @@ export class PedidoCard {
     return ACCION[sig];
   });
 
-  protected readonly cobrable = computed(() => ['listo', 'en_camino', 'entregado'].includes(this.pedido().estado));
+  // Solo Recepción y Administración registran cobros y descuentan saldo.
+  protected readonly puedeCobrar = computed(() => {
+    const p = this.pedido();
+    const rol = this.store.sesion()?.rol;
+    return !p.pago && (rol === 'recepcion' || rol === 'admin') && p.estado !== 'rechazado' && p.estado !== 'cancelado';
+  });
+
+  protected readonly cobrando = signal(false);
+  protected readonly montoSaldo = signal(0);
+  protected readonly medioOtro = signal<MedioPago>('mercadopago');
+  protected readonly errorCobro = signal('');
+  protected readonly disponible = computed(() => Math.max(0, this.store.saldoDe(this.pedido().loteId).disponible));
+  protected readonly maxSaldo = computed(() => Math.min(this.disponible(), this.pedido().total));
+  protected readonly resto = computed(() => Math.max(0, this.pedido().total - (this.montoSaldo() || 0)));
+
+  protected abrirCobro() {
+    const p = this.pedido();
+    this.montoSaldo.set(p.medioPreferido === 'saldo' ? this.maxSaldo() : 0);
+    this.medioOtro.set(p.medioPreferido === 'tarjeta' ? 'tarjeta' : 'mercadopago');
+    this.errorCobro.set('');
+    this.cobrando.set(true);
+  }
+
+  protected confirmarCobro() {
+    const error = this.store.registrarCobro(this.pedido().id, this.montoSaldo(), this.medioOtro());
+    if (error) this.errorCobro.set(error);
+    else this.cobrando.set(false);
+  }
 
   protected hace() {
     const min = Math.max(0, Math.round((Date.now() - new Date(this.pedido().creadoEn).getTime()) / 60000));

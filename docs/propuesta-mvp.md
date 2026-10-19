@@ -7,13 +7,13 @@ Estado: borrador para validar con Matias. Los puntos marcados con **(?)** depend
 
 ## 1. Objetivo
 
-Reemplazar los pedidos por WhatsApp con una app web (instalable en el celular como PWA) donde los vecinos piden comida del restaurante del club house para **delivery al lote**, **retiro en el mostrador** o **consumo en el lugar**, y pagan total o parcialmente con su **saldo mensual** del lote.
+Reemplazar los pedidos por WhatsApp con una app web (instalable en el celular como PWA) donde los vecinos piden comida del restaurante del club house para **delivery al lote**, **retiro en el mostrador** o **consumo en el lugar**, y pueden pagar total o parcialmente con el **saldo mensual** del lote, que descuenta Recepción al cobrar.
 
 ## 2. Usuarios y roles
 
 | Rol | Qué hace |
 |---|---|
-| **Vecino (cuenta del lote)** | Una sola cuenta por lote, compartida por la familia. Ve el menú, arma el pedido, elige modalidad, paga con saldo y/u otro medio, sigue el estado, ve su historial y su saldo. |
+| **Vecino (cuenta del lote)** | Una sola cuenta por lote, compartida por la familia. Ve el menú, arma el pedido, elige modalidad e indica cómo piensa pagar, sigue el estado, ve su historial y su saldo (solo para consultar). |
 | **Recepción** | Recibe pedidos en tiempo real, cambia estados (aceptado, en preparación, listo, en camino, entregado), puede rechazar. |
 | **Administrador** | Gestiona menú, precios, horarios, lotes, vecinos y saldos mensuales; ve reportes. |
 | **Repartidor** | El restaurante tiene repartidor propio. Ve los pedidos de delivery asignados (lote y nombre de quien pidió) y los marca entregados y cobrados. |
@@ -24,7 +24,7 @@ Reemplazar los pedidos por WhatsApp con una app web (instalable en el celular co
 1. **Una cuenta por lote**: la administración da de alta el usuario de cada lote. Al hacer un pedido se carga el **nombre de quien pide** (y teléfono de contacto opcional); el lote se toma de la cuenta.
 2. Menú por categorías con productos, precio, foto, disponibilidad y opciones simples (ej. "sin cebolla", guarnición).
 3. Carrito y checkout con modalidad: delivery (al lote del vecino), retiro (con horario estimado) o en el lugar (número de mesa o nombre).
-4. Pago: la app descuenta el saldo mensual del lote y calcula el **resto a pagar**. Ese resto se cobra **por fuera de la app** (Mercado Pago o tarjeta, en el lugar o al entregar en el lote). El vecino indica con qué va a pagar y el restaurante marca el pedido como cobrado.
+4. Pago: el vecino ve su saldo disponible e indica cómo piensa pagar (saldo del lote, Mercado Pago o tarjeta), pero **al pedir no se descuenta nada**. Cuando cobra, **Recepción o Administración registran el pago a mano**: cuánto descuentan del saldo del lote y cuánto se pagó por fuera de la app (Mercado Pago o tarjeta).
 5. Panel del restaurante con cola de pedidos en vivo (WebSocket) y cambio de estados.
 6. Notificaciones al vecino cuando cambia el estado del pedido (en la app; push o WhatsApp después).
 7. Panel admin: ABM de menú, lotes, vecinos, horarios y carga/renovación mensual del saldo.
@@ -46,7 +46,7 @@ Reemplazar los pedidos por WhatsApp con una app web (instalable en el celular co
 - **Saldo mensual**: se asigna por **lote** (no por persona), se renueva el día 1 de cada mes y **el sobrante se pierde** (no se acumula).
 - Una cuenta por lote; toda la familia comparte saldo e historial, y cada pedido registra el nombre de quien lo hizo.
 - La app **no procesa pagos**: solo registra el medio elegido (Mercado Pago o tarjeta) y si el resto ya se cobró. El cobro se hace en el mostrador, en la mesa o al entregar en el lote.
-- El saldo se descuenta al **confirmar** el pedido y se devuelve si el restaurante lo rechaza o se cancela.
+- El saldo **no se descuenta al pedir**: lo descuentan Recepción o Administración al registrar el cobro. Si un pedido cobrado se rechaza o cancela, el saldo descontado vuelve al lote.
 - Delivery solo dentro del barrio, **sin costo de envío**. El restaurante tiene repartidor propio.
 - Pedidos solo dentro del horario del restaurante; los productos sin stock se ocultan.
 
@@ -73,13 +73,13 @@ pedido ──< pedido_estado_historial
 | `pedido` | id, numero_corto, usuario_id, lote_id, nombre_solicitante, telefono_contacto, modalidad (`delivery`, `retiro`, `en_lugar`), estado (`pendiente`, `aceptado`, `en_preparacion`, `listo`, `en_camino`, `entregado`, `cancelado`, `rechazado`), mesa, hora_retiro, notas, subtotal, costo_envio, total, creado_en |
 | `pedido_item` | id, pedido_id, producto_id, nombre_snapshot, precio_unitario_snapshot, cantidad, notas |
 | `pedido_item_opcion` | id, pedido_item_id, opcion_id, nombre_snapshot, precio_snapshot |
-| `pago` | id, pedido_id, medio (`saldo`, `mercadopago`, `tarjeta`), monto, estado (`pendiente`, `cobrado`), cobrado_por (usuario_id), cobrado_en. Solo registra el cobro; el dinero se mueve por fuera de la app. |
+| `pago` | id, pedido_id, medio (`saldo`, `mercadopago`, `tarjeta`), monto, registrado_por (usuario_id), registrado_en. Lo carga Recepción o Administración al cobrar; un pedido puede tener una línea de saldo y otra de otro medio. El pedido guarda además `medio_preferido`, lo que eligió el vecino. |
 | `pedido_estado_historial` | id, pedido_id, estado, usuario_id, creado_en |
 | `horario` | id, dia_semana, abre, cierra, modalidades_habilitadas |
 
 Decisiones de diseño:
 - Los montos se guardan como `numeric(12,2)`; nunca `float`.
-- El saldo disponible se actualiza en la misma transacción que crea el pedido y su `movimiento_saldo`, con `SELECT ... FOR UPDATE` sobre el saldo del lote para evitar que dos pedidos simultáneos del mismo lote lo dejen negativo.
+- El saldo disponible se actualiza en la misma transacción que registra el pago y su `movimiento_saldo`, con `SELECT ... FOR UPDATE` sobre el saldo del lote para evitar que dos cobros simultáneos del mismo lote lo dejen negativo.
 - Los ítems guardan nombre y precio "snapshot" para que un cambio de precio no altere pedidos viejos.
 - `movimiento_saldo` es el libro contable: el disponible siempre se puede reconstruir sumando movimientos.
 
@@ -96,7 +96,7 @@ Decisiones de diseño:
 
 1. Repo, Docker Compose, esquema de base y seeds (lotes, menú de ejemplo).
 2. Auth y roles; ABM admin de lotes, vecinos y menú.
-3. Menú, carrito y checkout del vecino con descuento de saldo.
+3. Menú, carrito y checkout del vecino; registro de cobros con descuento de saldo.
 4. Panel del restaurante en tiempo real y seguimiento del pedido.
 5. Historial, reportes y renovación mensual del saldo.
 6. Prueba piloto con el restaurante y algunos vecinos.
