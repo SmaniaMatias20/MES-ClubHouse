@@ -20,6 +20,12 @@ npm start          # http://localhost:4200
 
 Build de producción: `npm run build` (sale en `frontend/dist/frontend/browser`). Usa rutas con `#`, así que se puede subir a cualquier hosting estático.
 
+## Demo online
+
+Cada push a `main` publica la demo en GitHub Pages (`.github/workflows/pages.yml`): https://smaniamatias20.github.io/MES-ClubHouse/
+
+Requiere activar una vez **Settings → Pages → Source: GitHub Actions**. En una cuenta gratuita, GitHub Pages solo funciona con el repo público.
+
 ## Qué se puede probar
 
 En la barra superior, **Ver como** cambia entre un lote, el restaurante, el repartidor y la administración.
