@@ -1,4 +1,4 @@
-export type Rol = 'vecino' | 'restaurante' | 'repartidor' | 'admin';
+export type Rol = 'vecino' | 'recepcion' | 'repartidor' | 'admin';
 
 export type Modalidad = 'delivery' | 'retiro' | 'en_lugar';
 

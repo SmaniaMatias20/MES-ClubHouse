@@ -21,8 +21,8 @@ export const routes: Routes = [
       { path: 'cuenta', loadComponent: () => import('./pages/vecino/cuenta').then(m => m.CuentaPage) },
     ],
   },
-  { path: 'restaurante', canActivate: [soloRol('restaurante', 'admin')], loadComponent: () => import('./pages/restaurante/panel').then(m => m.PanelPage) },
-  { path: 'repartidor', canActivate: [soloRol('repartidor', 'restaurante', 'admin')], loadComponent: () => import('./pages/repartidor/repartidor').then(m => m.RepartidorPage) },
+  { path: 'recepcion', canActivate: [soloRol('recepcion', 'admin')], loadComponent: () => import('./pages/recepcion/panel').then(m => m.PanelPage) },
+  { path: 'repartidor', canActivate: [soloRol('repartidor', 'recepcion', 'admin')], loadComponent: () => import('./pages/repartidor/repartidor').then(m => m.RepartidorPage) },
   { path: 'admin', canActivate: [soloRol('admin')], loadComponent: () => import('./pages/admin/admin').then(m => m.AdminPage) },
   { path: '**', redirectTo: 'ingresar' },
 ];

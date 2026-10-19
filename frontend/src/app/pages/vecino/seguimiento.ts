@@ -77,7 +77,7 @@ import { StoreService } from '../../core/store.service';
           <a class="btn" routerLink="/menu">Volver al menú</a>
         </div>
 
-        <p class="tip small muted">💡 Demo: cambiá a <strong>Restaurante</strong> en "Ver como" para avanzar el pedido y volvé a este lote para ver el estado actualizado.</p>
+        <p class="tip small muted">💡 Demo: cambiá a <strong>Recepción</strong> en "Ver como" para avanzar el pedido y volvé a este lote para ver el estado actualizado.</p>
       } @else {
         <div class="card empty">No encontramos ese pedido.</div>
       }

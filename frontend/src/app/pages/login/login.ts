@@ -41,7 +41,7 @@ import { StoreService } from '../../core/store.service';
           <p class="small muted"><strong>Demo:</strong> la contraseña no se valida. Probá con un lote o entrá como personal del club.</p>
           <div class="chips">
             <button class="chip" (click)="lote = '112'; ingresar()">Lote 112</button>
-            <button class="chip" (click)="como('restaurante')">Restaurante</button>
+            <button class="chip" (click)="como('recepcion')">Recepción</button>
             <button class="chip" (click)="como('repartidor')">Repartidor</button>
             <button class="chip" (click)="como('admin')">Administración</button>
           </div>
