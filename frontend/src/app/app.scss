@@ -6,11 +6,11 @@
 }
 .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
 .logo {
-  font: 700 .85rem var(--serif); letter-spacing: .06em;
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 42px; height: 42px; border-radius: 50%;
   display: grid; place-items: center;
-  background: var(--arena); color: var(--verde);
+  background: var(--cielo);
 }
+.logo img { width: 34px; height: 34px; object-fit: contain; }
 .brand-txt { display: grid; line-height: 1.15; }
 .brand-txt strong { font: 700 1.05rem var(--serif); }
 .brand-txt small { font-size: .72rem; opacity: .75; }

@@ -36,7 +36,6 @@ export interface Producto {
   nombre: string;
   descripcion: string;
   precio: number;
-  emoji: string;
   disponible: boolean;
 }
 

@@ -30,7 +30,6 @@ import { StoreService } from '../../core/store.service';
               <h2>Productos</h2>
               @for (i of store.carrito(); track i.producto.id) {
                 <div class="item">
-                  <span class="emoji">{{ i.producto.emoji }}</span>
                   <div class="desc">
                     <strong>{{ i.producto.nombre }}</strong>
                     <input class="nota" placeholder="Aclaración (ej. sin cebolla)" [ngModel]="i.notas" (ngModelChange)="store.notaItem(i.producto.id, $event)" />
@@ -124,9 +123,8 @@ import { StoreService } from '../../core/store.service';
   `,
   styles: `
     .layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; align-items: start; }
-    .item { display: grid; grid-template-columns: 44px 1fr auto 100px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--arena-2); }
+    .item { display: grid; grid-template-columns: 1fr auto 100px; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--arena-2); }
     .item:last-child { border-bottom: 0; }
-    .emoji { font-size: 1.6rem; text-align: center; }
     .desc { display: grid; gap: 6px; min-width: 0; }
     .nota { padding: 6px 10px; font-size: .85rem; }
     .qty { display: flex; align-items: center; gap: 8px; font-weight: 700; }
@@ -155,8 +153,8 @@ import { StoreService } from '../../core/store.service';
       .resumen { position: static; }
     }
     @media (max-width: 560px) {
-      .item { grid-template-columns: 36px 1fr auto; }
-      .precio { grid-column: 2 / -1; }
+      .item { grid-template-columns: 1fr auto; }
+      .precio { grid-column: 1 / -1; }
       .modos { grid-template-columns: 1fr; }
       .modo { grid-template-columns: auto 1fr; column-gap: 10px; }
       .modo .ico { grid-row: span 2; }
