@@ -2,7 +2,7 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 import { CartItem, EstadoPedido, Lote, MedioPago, Modalidad, MovimientoSaldo, Pedido, PedidoItem, Producto, Sesion } from './models';
 import { CATEGORIAS, LOTES, PRODUCTOS, generarDatosIniciales, periodoDe } from './mock-data';
 
-const STORAGE_KEY = 'mes-clubhouse-demo-v1';
+const STORAGE_KEY = 'mes-clubhouse-demo-v2';
 
 interface EstadoDemo {
   sesion: Sesion | null;

@@ -35,7 +35,6 @@ import { StoreService } from '../../core/store.service';
           <div class="productos">
             @for (p of grupo.productos; track p.id) {
               <article class="card prod" [class.off]="!p.disponible">
-                <div class="emoji">{{ p.emoji }}</div>
                 <div class="info">
                   <h3>{{ p.nombre }}</h3>
                   <p class="muted small">{{ p.descripcion }}</p>
@@ -75,10 +74,9 @@ import { StoreService } from '../../core/store.service';
     .cats .chips { flex-wrap: nowrap; }
     .grupo { margin-bottom: 28px; }
     .grupo h2 { margin-bottom: 12px; }
-    .productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
     .prod { display: flex; gap: 14px; padding: 14px; }
     .prod.off { opacity: .55; }
-    .emoji { font-size: 2.2rem; width: 64px; height: 64px; flex: none; display: grid; place-items: center; background: var(--arena); border-radius: 12px; }
     .info { flex: 1; display: grid; gap: 4px; min-width: 0; }
     .pie { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; gap: 8px; }
     .qty { display: flex; align-items: center; gap: 10px; font-weight: 700; }

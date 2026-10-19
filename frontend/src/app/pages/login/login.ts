@@ -12,9 +12,9 @@ import { StoreService } from '../../core/store.service';
   template: `
     <div class="wrap">
       <section class="hero">
-        <span class="logo">MES</span>
+        <img class="logo" src="img/logo-lagos.png" [alt]="country" />
         <h1>Club House</h1>
-        <p>{{ country }}</p>
+        <p>Pedidos al restaurante del barrio</p>
         <ul>
           <li>🛵 Delivery a tu lote</li>
           <li>🛍️ Retiro en el mostrador</li>
@@ -52,13 +52,13 @@ import { StoreService } from '../../core/store.service';
   styles: `
     .wrap { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
     .hero {
-      background: linear-gradient(160deg, var(--verde) 0%, #163a2b 60%, var(--lago) 140%);
-      color: #fff; padding: 48px; display: flex; flex-direction: column; justify-content: center; gap: 10px;
+      background: linear-gradient(180deg, var(--cielo) 0%, #dcefee 100%);
+      color: var(--tinta); padding: 48px; display: flex; flex-direction: column; justify-content: center; gap: 10px;
     }
-    .hero h1 { font-size: 2.8rem; }
-    .hero p { opacity: .8; font-size: 1.1rem; }
+    .hero h1 { font-size: 2.8rem; color: var(--verde); }
+    .hero p { color: var(--tinta-2); font-size: 1.1rem; }
     .hero ul { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 10px; font-size: 1.05rem; }
-    .logo { font: 700 1rem var(--serif); width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--arena); color: var(--verde); }
+    .logo { width: min(340px, 100%); height: auto; margin-bottom: 18px; }
     .form { align-self: center; justify-self: center; width: min(420px, calc(100% - 32px)); display: grid; gap: 14px; margin: 32px 0; }
     .err { color: var(--rojo); font-size: .88rem; }
     .demo { border-top: 1px dashed var(--borde); padding-top: 14px; display: grid; gap: 10px; }
@@ -66,6 +66,7 @@ import { StoreService } from '../../core/store.service';
       .wrap { grid-template-columns: 1fr; min-height: auto; }
       .hero { padding: 32px 20px; }
       .hero h1 { font-size: 2rem; }
+      .logo { width: min(240px, 80%); margin-bottom: 8px; }
       .hero ul { display: none; }
     }
   `,

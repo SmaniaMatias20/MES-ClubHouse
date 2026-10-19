@@ -131,11 +131,10 @@
     @case ('menu') {
       <div class="table-wrap">
         <table>
-          <thead><tr><th></th><th>Producto</th><th>Categoría</th><th class="r">Precio</th><th>Disponible</th></tr></thead>
+          <thead><tr><th>Producto</th><th>Categoría</th><th class="r">Precio</th><th>Disponible</th></tr></thead>
           <tbody>
             @for (p of store.productos(); track p.id) {
               <tr [class.inactivo]="!p.disponible">
-                <td class="emoji">{{ p.emoji }}</td>
                 <td><strong>{{ p.nombre }}</strong><br /><span class="small muted">{{ p.descripcion }}</span></td>
                 <td>{{ categoria(p.categoriaId) }}</td>
                 <td class="r"><input class="monto" type="number" step="100" [ngModel]="p.precio" (change)="store.actualizarProducto(p.id, { precio: +$any($event.target).value })" /></td>
